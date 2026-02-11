@@ -35,14 +35,14 @@ public class MovePlayer : MonoBehaviour
     {
         //This gets the input from the player, works with the Input Manager
         float moveInput = Input.GetAxisRaw("Horizontal");
-        if (Input.GetKeyDown(KeyCode.LeftControl))
+        if (Input.GetButtonDown("Fire1"))
         {
             attackInput = 1;
         }
-         else if (Input.GetKeyUp(KeyCode.LeftControl))
+       /* else if (Input.GetButtonUp("Fire1"))
         {
             attackInput = 0;
-        }
+        }*/
         //This moves the player
         rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y);
         if (moveInput > 0)
@@ -87,52 +87,53 @@ public class MovePlayer : MonoBehaviour
         if (isGrounded)
         {
             if (moveInput == 0 && Direction == 0)
-            {
+            {  //This checks if the player is idle and facing right, if so it plays the idle animation for right
                 if (attackInput == 1)
                 {
                     animator.Play("Attack_1_R");
                 }
-                else
+                else //If not attacking, play the idle animation for right
                     animator.Play("PlayerAnimation");
             }
             else if (moveInput == 0 && Direction == 1)
-            {
-                    if (attackInput == 1)
+            {       //This checks if the player is idle and facing left, if so it plays the idle animation for left
+                if (attackInput == 1)
                     {
                         animator.Play("Attack_1_L");
                     }
-                else
+                else //If not attacking, play the idle animation for left
                     animator.Play("Player_Idle_L");
             }
             else if (Direction == 1)
-            {
+            {  //This checks if the player is moving left and facing left, if so it plays the run animation for left
                 if (attackInput == 1) 
                 { 
                     animator.Play("Attack_1_L");
                 }
-                else
-                animator.Play("PlayerRun_L");
+                else //If not attacking, play the run animation for left
+                    animator.Play("PlayerRun_L");
             }
             else
-            {
+            {   //This checks if the player is moving right and facing right, if so it plays the run animation for right
                 if (attackInput == 1)
                 {
                     animator.Play("Attack_1_R");
                 }
-                else
-                animator.Play("Player Run");
+                else //If not attacking, play the run animation for right
+                    animator.Play("Player Run");
             }
         }
         else
-        {
+        {   //This checks if the player is moving upwards and facing right, if so it plays the jump animation for right
             if (rb.linearVelocity.y >= 0 && Direction == 0)
             {
                 animator.Play("Player_Jump");
             }
+            //This checks if the player is moving upwards and facing left, if so it plays the jump animation for left
             else if (rb.linearVelocity.y >= 0 && Direction == 1)
             {
                 animator.Play("Player_Jump_L");
-            }
+            } //This checks if the player is moving downwards and facing right, if so it plays the fall animation for right
             else if (Direction == 0)
             {
                 animator.Play("Player_Fall");
