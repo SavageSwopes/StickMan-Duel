@@ -23,6 +23,7 @@ public class MovePlayer : MonoBehaviour
     private Animator animator;
     private void Start()
     {
+        //Component references
         sprite = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
@@ -32,7 +33,17 @@ public class MovePlayer : MonoBehaviour
 
     private void Update()
     {
+        //This gets the input from the player, works with the Input Manager
         float moveInput = Input.GetAxisRaw("Horizontal");
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            attackInput = 1;
+        }
+         else if (Input.GetKeyUp(KeyCode.LeftControl))
+        {
+            attackInput = 0;
+        }
+        //This moves the player
         rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y);
         if (moveInput > 0)
         {
@@ -47,22 +58,27 @@ public class MovePlayer : MonoBehaviour
         {
             extraJumps = extraJumpValue;
         }
+        //Checks for jump input
         if (Input.GetKeyDown(KeyCode.Space)){
             if (isGrounded)
             {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+                //Jumping code
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             }
             else if (extraJumps > 0)
             {
+                //Extra jump code
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
                 extraJumps--;
             }
         }
         SetAnimation(moveInput);
+        FixedUpdate();
     }
 
     private void FixedUpdate()
     {
+        //This checks if the player is on the ground by creating a circle at the position of the groundCheck object and checking if it overlaps with any colliders on the groundLayer
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
     }
 
@@ -72,18 +88,38 @@ public class MovePlayer : MonoBehaviour
         {
             if (moveInput == 0 && Direction == 0)
             {
-                animator.Play("PlayerAnimation");
+                if (attackInput == 1)
+                {
+                    animator.Play("Attack_1_R");
+                }
+                else
+                    animator.Play("PlayerAnimation");
             }
             else if (moveInput == 0 && Direction == 1)
             {
-                animator.Play("Player_Idle_L");
+                    if (attackInput == 1)
+                    {
+                        animator.Play("Attack_1_L");
+                    }
+                else
+                    animator.Play("Player_Idle_L");
             }
             else if (Direction == 1)
             {
+                if (attackInput == 1) 
+                { 
+                    animator.Play("Attack_1_L");
+                }
+                else
                 animator.Play("PlayerRun_L");
             }
             else
             {
+                if (attackInput == 1)
+                {
+                    animator.Play("Attack_1_R");
+                }
+                else
                 animator.Play("Player Run");
             }
         }
