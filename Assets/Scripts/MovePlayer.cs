@@ -29,6 +29,11 @@ public class MovePlayer : MonoBehaviour
     private int Direction;  //left is 1, 0 is right
 
     // attack variables
+    /* 
+       [SerializeField] private string enemyTag;
+       [SerializeField] private float knockbackForce = 5f; 
+       [SerializeField] private float knockbackForceUp = 2f; */
+    [SerializeField] private BoxCollider2D attackHitbox;
     [SerializeField] private float attackTimer = 0.23f;
     internal int attackInput = 0;
     private int comboStep = 0;
@@ -43,7 +48,7 @@ public class MovePlayer : MonoBehaviour
         sprite = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-
+        attackHitbox.enabled = false; // Ensure hitbox is disabled at the start
         extraJumps = extraJumpValue;
     }
 
@@ -69,16 +74,6 @@ public class MovePlayer : MonoBehaviour
                 Direction = 1;
             }
         }
-
-
-        /*if (Input.GetButtonDown("Fire1") && !isAttacking && isGrounded)
-        {
-            StartCoroutine(PerformAttack());
-        }
-        if (Input.GetButtonDown("Fire1") && !isAttacking)
-        {
-            StartCoroutine(PerformAttack2());
-        }*/
 
         if (isGrounded)
         {
@@ -118,10 +113,9 @@ public class MovePlayer : MonoBehaviour
 
     private IEnumerator PerformComboAttack()
     {
-          isAttacking= true;
+        isAttacking= true;
         lastAttackTime = Time.time; // Update last attack time
         comboStep++;
-        Debug.Log("Combo Step: " + comboStep);
         if (comboStep > 2)
         {
             comboStep = 1; // Loop back to the first attack in the combo
@@ -131,12 +125,10 @@ public class MovePlayer : MonoBehaviour
         {
             if (Direction == 0)
             {
-                Debug.Log("Performing Attack 1 Right");
                 animator.Play("Attack_1_R");
             }
             else
             {
-                Debug.Log("Performing Attack 1 Left");
                 animator.Play("Attack_1_L");
             }
         }
@@ -155,37 +147,7 @@ public class MovePlayer : MonoBehaviour
         yield return new WaitForSeconds(attackTimer); ;
         isAttacking = false;
     }
-    //This is a coroutine that handles the attack animation and timing
-    IEnumerator PerformAttack()
-    {
-        isAttacking = true;
-        if (Direction == 0)
-        {
-            animator.Play("Attack_1_R");
-        }
-        else
-        {
-            animator.Play("Attack_1_L");
-        }
-        yield return new WaitForSeconds(attackTimer);
-        isAttacking = false;
-    }
 
-    IEnumerator PerformAttack2()
-    {
-        isAttacking = true;
-        if (Direction == 0)
-        {
-            animator.Play("Attack_2_R");
-        }
-        /*
-        else
-        {
-            animator.Play("Attack_1_L");
-        }*/
-        yield return new WaitForSeconds(attackTimer);
-        isAttacking = false;
-    }
     private void FixedUpdate()
     {
         //This checks if the player is on the ground by creating a circle at the position of the groundCheck object and checking if it overlaps with any colliders on the groundLayer
@@ -248,69 +210,39 @@ public class MovePlayer : MonoBehaviour
                 animator.Play("Player_Fall_L");
             }
         }
-    }
-        /*
-        private void SetAnimation(float moveInput)
-        {
-            if (isGrounded)
-            {
-                if (moveInput == 0 && Direction == 0)
-                {  //This checks if the player is idle and facing right, if so it plays the idle animation for right
-                    if (attackInput == 1)
-                    {
-                        animator.Play("Attack_1_R");
+       }
 
-                    }
-                    else //If not attacking, play the idle animation for right
-                        animator.Play("PlayerAnimation");
-                }
-                else if (moveInput == 0 && Direction == 1)
-                {       //This checks if the player is idle and facing left, if so it plays the idle animation for left
-                    if (attackInput == 1)
-                    {
-                        animator.Play("Attack_1_L");
-                    }
-                    else //If not attacking, play the idle animation for left
-                        animator.Play("Player_Idle_L");
-                }
-                else if (Direction == 1)
-                {  //This checks if the player is moving left and facing left, if so it plays the run animation for left
-                    if (attackInput == 1)
-                    {
-                        animator.Play("Attack_1_L");
-                    }
-                    else //If not attacking, play the run animation for left
-                        animator.Play("PlayerRun_L");
-                }
-                else
-                {   //This checks if the player is moving right and facing right, if so it plays the run animation for right
-                    if (attackInput == 1)
-                    {
-                        animator.Play("Attack_1_R");
-                    }
-                    else //If not attacking, play the run animation for right
-                        animator.Play("Player Run");
-                }
-            }
-            else
-            {   //This checks if the player is moving upwards and facing right, if so it plays the jump animation for right
-                if (rb.linearVelocity.y >= 0 && Direction == 0)
-                {
-                    animator.Play("Player_Jump");
-                }
-                //This checks if the player is moving upwards and facing left, if so it plays the jump animation for left
-                else if (rb.linearVelocity.y >= 0 && Direction == 1)
-                {
-                    animator.Play("Player_Jump_L");
-                } //This checks if the player is moving downwards and facing right, if so it plays the fall animation for right
-                else if (Direction == 0)
-                {
-                    animator.Play("Player_Fall");
-                }
-                else
-                {
-                    animator.Play("Player_Fall_L");
-                }
-            }
-        } */
+    public void EnableHitbox()
+    {
+        attackHitbox.enabled = true;
     }
+    public void DisableHitbox() 
+    {
+        attackHitbox.enabled = false; 
+    }
+    /*
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (!attackHitbox.enabled) return;
+
+        if (collision.gameObject.CompareTag(enemyTag))
+        {
+            if (attackHitbox.IsTouching(collision))
+            {
+                Debug.Log("Collided with Enemy: " + collision.gameObject.name);
+
+                Rigidbody2D enemyRb = collision.gameObject.GetComponent<Rigidbody2D>();
+                if (enemyRb != null)
+                {
+                    Vector2 knockbackDirection = (collision.transform.position - transform.position).normalized;
+
+                    knockbackDirection.y = knockbackForceUp;
+                    enemyRb.AddForce(knockbackDirection * knockbackForce, ForceMode2D.Impulse);
+                }
+                // Handle collision with enemy (e.g., take damage, knockback, etc.)
+            }
+            
+        }
+    } */
+    
+}
