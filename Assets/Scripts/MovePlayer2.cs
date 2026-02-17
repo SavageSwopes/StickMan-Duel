@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
-public class MovePlayer : MonoBehaviour
+public class MovePlayer2 : MonoBehaviour
 {
     //adjustable movement and jump variables
     [Header("Movement Settings")]
@@ -109,11 +109,11 @@ public class MovePlayer : MonoBehaviour
         SetAnimation(moveInput);
         FixedUpdate();
     }
-    
+
 
     private IEnumerator PerformComboAttack()
     {
-        isAttacking= true;
+        isAttacking = true;
         lastAttackTime = Time.time; // Update last attack time
         comboStep++;
         if (comboStep > 2)
@@ -210,15 +210,15 @@ public class MovePlayer : MonoBehaviour
                 animator.Play("Player_Fall_L");
             }
         }
-       }
+    }
 
     public void EnableHitbox()
     {
         attackHitbox.enabled = true;
     }
-    public void DisableHitbox() 
+    public void DisableHitbox()
     {
-        attackHitbox.enabled = false; 
+        attackHitbox.enabled = false;
     }
 
     /*
@@ -245,5 +245,5 @@ public class MovePlayer : MonoBehaviour
             
         }
     } */
-    
+
 }
