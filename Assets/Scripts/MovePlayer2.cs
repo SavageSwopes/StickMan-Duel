@@ -12,17 +12,22 @@ public class MovePlayer2 : MonoBehaviour
     [Header("Player Settings")]
     [SerializeField] private float speed;
     [SerializeField] private float jumpingPower;
+    private int extraJumps = 1;
+    [SerializeField] private float fallSpeedMultiplier;
+    [SerializeField] private float baseGravity;
 
     [Header("Grounding")]
     [SerializeField] private float groundCheckRadius = 0.5f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private Transform groundCheck;
 
-
+    [Header("Animation Settings")]
     private SpriteRenderer sprite;
     private Animator animator;
     private int Direction;
+    public bool isWalking;
 
+    [Header("Attack Settings")]
     [SerializeField] private BoxCollider2D attackHitbox;
     [SerializeField] private float attackTimer = 0.39f;
     [SerializeField] float comboResetTime = .7f; // Time window to reset the combo
@@ -50,6 +55,8 @@ public class MovePlayer2 : MonoBehaviour
         {
             comboStep = 0; // Reset combo if time since last attack exceeds reset time
         }
+        isGrounded();
+        
     }
 
 
@@ -62,30 +69,36 @@ public class MovePlayer2 : MonoBehaviour
     public void Move(InputAction.CallbackContext context)
     {
         horizontal = context.ReadValue<Vector2>().x;
+        isWalking = true;
+        //animator.SetBool("isWalking", isWalking);
 
-        if (horizontal > 0)
-        {
-            Direction = 0; // Right
-        }
-        else if (horizontal < 0)
-        {
-            Direction = 1; // Left
-        }
-        SetAnimation(horizontal);
+        //SetAnimation(horizontal);
     }
-
+    /// <summary>
+    /// This is for player jumping.
+    /// </summary>
+    /// <param name="context"></param>
     public void Jump(InputAction.CallbackContext context)
     {
-        if (context.performed && isGrounded())
+        if (extraJumps > 0)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpingPower);
+            if (context.performed)
+            {
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpingPower);
+                extraJumps--;
+            }          
         }
-        SetJumpAnimation();
+        //SetJumpAnimation();
     }
 
     private bool isGrounded()
     {
-        return Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        
+        if (Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer))
+        {
+            extraJumps = 1;
+        }
+        return false;
     }
 
     //Test
@@ -93,7 +106,7 @@ public class MovePlayer2 : MonoBehaviour
     {
         if (!isAttacking && isGrounded())
         {
-            StartCoroutine(PerformComboAttack());
+            //StartCoroutine(PerformComboAttack());
         }
     }
     #endregion
