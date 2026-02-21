@@ -42,7 +42,7 @@ public class MovePlayer : MonoBehaviour
     private bool isAttacking = false;
 
 
-    private void Start()
+    private void Awake()
     {
         //Component references
         sprite = GetComponent<SpriteRenderer>();

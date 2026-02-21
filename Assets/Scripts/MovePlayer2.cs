@@ -1,116 +1,105 @@
-using System.Runtime.CompilerServices;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
+using UnityEngine.U2D;
+
 
 public class MovePlayer2 : MonoBehaviour
 {
-    //adjustable movement and jump variables
-    [Header("Movement Settings")]
+    [Header("Player Component References")]
+    [SerializeField] private Rigidbody2D rb;
 
-    [SerializeField] float speed = 5f;
-    [SerializeField] float jumpForce = 10f;
-    [SerializeField] int extraJumpValue = 1;
+    [Header("Player Settings")]
+    [SerializeField] private float speed;
+    [SerializeField] private float jumpingPower;
 
-    //Movement variables
-    private int extraJumps;
-    public bool isMoving;
-
-    [Header("Ground Check Settings")]
-    // Ground check variables
-    [SerializeField] float groundCheckRadius = 0.2f;
-    public LayerMask groundLayer;
-    public Transform groundCheck;
-    private bool isGrounded;
+    [Header("Grounding")]
+    [SerializeField] private float groundCheckRadius = 0.5f;
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private Transform groundCheck;
 
 
-    // Animation variables
     private SpriteRenderer sprite;
-    private Rigidbody2D rb;
     private Animator animator;
-    private int Direction;  //left is 1, 0 is right
+    private int Direction;
 
-    [Header("Attack Settings")]
     [SerializeField] private BoxCollider2D attackHitbox;
-    [SerializeField] private float attackTimer = 0.23f;
+    [SerializeField] private float attackTimer = 0.39f;
+    [SerializeField] float comboResetTime = .7f; // Time window to reset the combo
     internal int attackInput = 0;
     private int comboStep = 0;
     private float lastAttackTime = 0f;
-    public float comboResetTime = 1f; // Time window to reset the combo
     private bool isAttacking = false;
 
 
-    private void Start()
+    private float horizontal;
+
+    //Test
+    private void Awake()
     {
-        //Component references
         sprite = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         attackHitbox.enabled = false; // Ensure hitbox is disabled at the start
-        extraJumps = extraJumpValue;
     }
 
+    //Test
     private void Update()
     {
-        //This gets the input from the player, works with the Input Manager
-        float moveInput = Input.GetAxisRaw("Horizontal");
-
-        //This moves the player
-        if (isAttacking)
-        {
-            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y); // Stop horizontal movement while attacking
-        }
-        else
-        {
-            rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y);
-            if (moveInput > 0)
-            {
-                Direction = 0;
-            }
-            else if (moveInput < 0)
-            {
-                Direction = 1;
-            }
-        }
-
-        if (isGrounded)
-        {
-            extraJumps = extraJumpValue;
-        }
-
-        //Checks for jump input
-        if (Input.GetKeyDown(KeyCode.Space) && !isAttacking)
-        {
-            if (isGrounded)
-            {
-                //Jumping code
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            }
-            else if (extraJumps > 0)
-            {
-                //Extra jump code
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-                extraJumps--;
-            }
-        }
-
         if (Time.time - lastAttackTime > comboResetTime)
         {
             comboStep = 0; // Reset combo if time since last attack exceeds reset time
         }
-        if (Input.GetButtonDown("Fire1") && !isAttacking && isGrounded)
-        {
-            StartCoroutine(PerformComboAttack());
-        }
-
-
-        SetAnimation(moveInput);
-        FixedUpdate();
     }
 
 
+    private void FixedUpdate()
+    {
+        rb.linearVelocity = new Vector2(horizontal * speed, rb.linearVelocity.y);
+    }
+
+    #region Player_Controls
+    public void Move(InputAction.CallbackContext context)
+    {
+        horizontal = context.ReadValue<Vector2>().x;
+
+        if (horizontal > 0)
+        {
+            Direction = 0; // Right
+        }
+        else if (horizontal < 0)
+        {
+            Direction = 1; // Left
+        }
+        SetAnimation(horizontal);
+    }
+
+    public void Jump(InputAction.CallbackContext context)
+    {
+        if (context.performed && isGrounded())
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpingPower);
+        }
+        SetJumpAnimation();
+    }
+
+    private bool isGrounded()
+    {
+        return Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+    }
+
+    //Test
+    public void Fire(InputAction.CallbackContext context)
+    {
+        if (!isAttacking && isGrounded())
+        {
+            StartCoroutine(PerformComboAttack());
+        }
+    }
+    #endregion
+
+
+    //Test
     private IEnumerator PerformComboAttack()
     {
         isAttacking = true;
@@ -143,25 +132,19 @@ public class MovePlayer2 : MonoBehaviour
                 animator.Play("Attack_2_L");
             }
         }
-
         yield return new WaitForSeconds(attackTimer); ;
         isAttacking = false;
     }
 
-    private void FixedUpdate()
-    {
-        //This checks if the player is on the ground by creating a circle at the position of the groundCheck object and checking if it overlaps with any colliders on the groundLayer
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-    }
-
-    private void SetAnimation(float moveInput)
+    //Test
+    private void SetAnimation(float horizontal)
     {
         // PRIORITY CHECK: If we are attacking, do not play other animations!
         if (isAttacking) return;
 
-        if (isGrounded)
+        if (isGrounded())
         {
-            if (moveInput == 0)
+            if (horizontal == 0)
             {
                 // Idle Logic
                 if (Direction == 0)
@@ -187,8 +170,11 @@ public class MovePlayer2 : MonoBehaviour
                 }
             }
         }
-        else
-        {   //This checks if the player is moving upwards and facing right, if so it plays the jump animation for right
+    }
+
+    private void SetJumpAnimation()
+    {
+          //This checks if the player is moving upwards and facing right, if so it plays the jump animation for right
             if (rb.linearVelocity.y >= 0)
             {
                 if (Direction == 0)
@@ -209,41 +195,5 @@ public class MovePlayer2 : MonoBehaviour
             {
                 animator.Play("Player_Fall_L");
             }
-        }
     }
-
-    public void EnableHitbox()
-    {
-        attackHitbox.enabled = true;
-    }
-    public void DisableHitbox()
-    {
-        attackHitbox.enabled = false;
-    }
-
-    /*
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (!attackHitbox.enabled) return;
-
-        if (collision.gameObject.CompareTag(enemyTag))
-        {
-            if (attackHitbox.IsTouching(collision))
-            {
-                Debug.Log("Collided with Enemy: " + collision.gameObject.name);
-
-                Rigidbody2D enemyRb = collision.gameObject.GetComponent<Rigidbody2D>();
-                if (enemyRb != null)
-                {
-                    Vector2 knockbackDirection = (collision.transform.position - transform.position).normalized;
-
-                    knockbackDirection.y = knockbackForceUp;
-                    enemyRb.AddForce(knockbackDirection * knockbackForce, ForceMode2D.Impulse);
-                }
-                // Handle collision with enemy (e.g., take damage, knockback, etc.)
-            }
-            
-        }
-    } */
-
 }
