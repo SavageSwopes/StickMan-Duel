@@ -660,6 +660,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 192
   groundCheck: {fileID: 319690757}
+  isWalking: 0
   attackHitbox: {fileID: 1891127475}
   attackTimer: 0.39
   comboResetTime: 0.7
@@ -783,6 +784,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 192
   groundCheck: {fileID: 2083390314}
+  isWalking: 0
   attackHitbox: {fileID: 821898561}
   attackTimer: 0.39
   comboResetTime: 0.7
@@ -1022,7 +1024,7 @@ Transform:
   m_GameObject: {fileID: 522634157}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.433, y: 0.29, z: 0}
+  m_LocalPosition: {x: 4.3704, y: 0.2263, z: 0}
   m_LocalScale: {x: 3.989, y: 3.8775, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1358,7 +1360,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!61 &821898561
 BoxCollider2D:
   m_ObjectHideFlags: 0

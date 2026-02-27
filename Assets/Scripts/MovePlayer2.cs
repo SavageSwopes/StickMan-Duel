@@ -56,6 +56,8 @@ public class MovePlayer2 : MonoBehaviour
             comboStep = 0; // Reset combo if time since last attack exceeds reset time
         }
         isGrounded();
+      
+        animator.SetFloat("magnitude", rb.linearVelocity.magnitude);
         
     }
 
@@ -66,6 +68,8 @@ public class MovePlayer2 : MonoBehaviour
     }
 
     #region Player_Controls
+
+
     public void Move(InputAction.CallbackContext context)
     {
         horizontal = context.ReadValue<Vector2>().x;
@@ -74,6 +78,8 @@ public class MovePlayer2 : MonoBehaviour
 
         //SetAnimation(horizontal);
     }
+
+
     /// <summary>
     /// This is for player jumping.
     /// </summary>
@@ -104,13 +110,15 @@ public class MovePlayer2 : MonoBehaviour
     //Test
     public void Fire(InputAction.CallbackContext context)
     {
-        if (!isAttacking && isGrounded())
+        if (context.performed && isGrounded())
         {
-            //StartCoroutine(PerformComboAttack());
+
+            animator.SetTrigger("isAttacking");
         }
     }
     #endregion
 
+    
 
     //Test
     private IEnumerator PerformComboAttack()
